@@ -12,18 +12,20 @@ const url = 'http://127.0.0.1:3000';
 btnLogin.addEventListener('click', async (e) => {
 
     e.preventDefault();
-    
-    console.log("Login",JSON.stringify({"Envio user": usuario, "pass": contrasena}));
-    
+
     try {
-            const userData = await fetch( url + '/usuarios/login', { 
-                method: 'post',
-                mode: 'no-cors',
-                body: JSON.stringify({'username':usuario,'password':contrasena})
-             });
-        } catch (err) {
-            alert(err);
-        }
+        const userData = await fetch( url + '/usuarios/login', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin':'*'
+              },
+            body:JSON.stringify({"username":usuario,"password":contrasena})
+         });
+    } catch (err) {
+        alert(err);
+    }
+
 
 })
 
@@ -34,31 +36,45 @@ btnTransferir.addEventListener('click', async (e) => {
     const hasta = document.querySelector('.to').value;
     const monto = document.querySelector('.amount').value;
 
-    console.log("Envio Dinero",JSON.stringify({"from": desde, "to": hasta, "amount": monto}));
-    
     try {
-            const userData = await fetch( url + '/transferencias/', { 
-                method: 'post',
-                mode: 'no-cors',
-                body: JSON.stringify({"from": desde, "to": hasta, "amount": monto})
-             });
+        const userData = await fetch( url + '/transferencias/', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin':'*'
+              },
+              body: JSON.stringify({"from": desde, "to": hasta, "amount": monto})
+         });
         } catch (err) {
             alert(err);
         }
-
 })
 
 btnTransferencias.addEventListener('click', async (e) => {
 
     e.preventDefault();
     
+    // try {
+    //         const userData = await fetch( url + '/saldo', { 
+    //             method: 'get',
+    //             mode: 'no-cors',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Access-Control-Allow-Origin':'*'
+    //               },
+    //          });
+    //     } catch (err) {
+    //         alert(err);
+    //     }
     try {
-            const userData = await fetch( url + '/saldo', { 
-                method: 'get',
-                mode: 'no-cors'
-             });
+        const userData = await fetch( url + '/saldo', { 
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin':'*'
+              }
+         });
         } catch (err) {
             alert(err);
         }
-       // console.log(userData);
 })
