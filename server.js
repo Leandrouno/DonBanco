@@ -1,208 +1,186 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const moment = require('moment');
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const jwt = require("jsonwebtoken");
+const expressJwt = require("express-jwt");
+const puerto = 3000;
 
 const server = express();
- 
+server.use(helmet());
+const jwtClave = "miClaveDel2020_genial";
+
+
+server.use(expressJwt({ secret: jwtClave, algorithms:["HS512"] }).unless({ path: ["/usuarios/login/" , "/usuarios/"] }));
+
+
+const limiteLogin = rateLimit({
+    windowMs: 6 * 60 * 10000,
+    max: 10 // Puse 10, pero me permite solo 8
+});
+
+server.use("/usuarios/login/", limiteLogin); // solo aplicamos al Login
+
 server.use(bodyParser.urlencoded({ extended: false }));
 server.use(bodyParser.json());
 
 const usuarios = [
 	{
-		id: 1,
-		username: "admin",
-		email: "",
-		password: "admin",
+		id: "1",
+		usuario: "Leandrito",
+		contrasena: "123",
+		nombre: "Leandro",
+		apellido: "Mugnolo",
 		admin: true
 	},
 	{
-		id: 2,
-		username: "leandro",
-		email: "leandro@email.com",
-		password: "lean123",
-		admin: false
-	},
-	{
-		id: 3,
-		username: "matias",
-		email: "lmatias@email.com",
-		password: "mati123",
-		admin: false
-	},
-]
-
-const transferencias = [{
-	id: 1,
-	from: 1,
-	to: 2,
-	amount: 250,
-	date: "1/1/2020"
-},
-{
-	id: 2,
-	from: 2,
-	to: 1,
-	amount: 500,
-	date: "1/1/2020"
-}
-]
-
-const state = {
-	lastTransId: 0,
-	lastUserId: 0
-}
-
-function initState() {
-	state.lastTransId = Math.max(...transferencias.map(transf => transf.id));
-	state.lastUserId = Math.max(...usuarios.map(usr => usr.id));
-}
-
-function getSaldo(userId){
-	const trans = transferencias.filter(t => t.from == userId || t.to == userId);
-	
-	const saldo = trans.reduce( (acum,tr) => { 
-		if(tr.to==userId)
-			acum+=tr.amount;
-		else	
-			acum-=tr.amount;
-		
-		return acum;
-	},0 );
-
-	return saldo;
-}
+		id: "2",
+		usuario: "Matias",
+		contrasena: "123",
+		nombre: "Matias",
+		apellido: "Szeftel",
+		admin: true
 
 
-/* Endpoints
-POST /usuarios
-body: {username,email,password}
-GET /usuarios
-devuelve [{id,username}]
-POST /usuarios/login
-body: {username,password}
-response: 200 OK {id,username,email}
-					400 ERROR
-GET /transferencias/idUsario
-	Lista transferencias del id logueado
-	response: [{id,from,to,amount,date}] donde from o to es idUsuario.
-POST /transferencias
-	Crea una transferencia
-	body: {from,to,amount} //from= el usuario logueado
-*/
+	}
 
-server.get("/saldo", (req, res) => {
-	res.status('200').send(`Saldo es ${getSaldo(1)}`);
-	console.log("consulta de saldo");
-})
+];
 
-/*
-GET /usuarios
-devuelve [{id,username}]*/
+function validarEmail(req, res, next) {
 
-server.get("/usuarios", (req, res) => {
-	const users = usuarios.filter(usr => usr.admin == false).map(({ id, username }) => { return { id, username } });
-	res.status(200).json(users);
-});
+	console.log("Usuario quiere registrase");
+	const email = req.body.email;
 
-/*
-POST /usuarios
-body: {username,email,password}
-*/
+	if (!email) {
 
-server.post("/usuarios", (req, res) => {
-	const { username, email, password } = req.body;
-	if (!usuarios.find(usr => usr.username == username)) {
-		state.lastUserId++;
+		res.status(404).json({
+			error: `Debe Enviar Email`
+		});
 
-		const newUser = {
-			id: state.lastUserId,
-			username,
-			email,
-			password,
-			admin: false
+	} else {
+
+		if (usuarios.find(u => u.email == email)) {
+			res.status(404).json({
+				error: `${email} ya existe en la base de datos`
+			});
+		} else if (/^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i.test(email)) {
+			next();
+		} else {
+			res.status(404).json({
+				error: `La direccion de Correo : ${email} es Incorrecta`
+			})
 		}
 
-		usuarios.push(newUser);
+	}
 
-		res.status('200').send('Usuario creado');
+}
+
+
+function validarEdad(req, res, next) {
+
+	const edad = req.body.edad;
+
+	if (edad > 18) {
+
+		if (edad % 1 == 0) {
+			next()
+		} else {
+			res.status(404).json({
+				error: 'Debe Introducir un numero entero en la edad'
+			});
+		}
+
+	} else {
+
+		res.status(404).json({
+			error: 'Debe Ser mayor de edad para registarse'
+		});
 
 	}
-	else
-		res.status('404').send(`Usuario ${username} ya existe`);
-});
+}
 
-/*
-POST /usuarios/login
-body: {username,password}
-response: 200 OK {id,username,email}
-					400 ERROR
-*/
-server.post("/usuarios/login", (req, res) => {
-	const { username, password } = req.body;
-console.log("recibo login",{ username, password });
-console.log("body Login : ",req.body);
-	const loginUser = usuarios.find(usr => usr.username == username && usr.password == password);
+function validarContrasena(req, res, next) {
+	const contrasena = req.body.password;
+	const contrasena2 = req.body.password2;
 
-	if (loginUser) {
-		res.status('200').json(
-			{
-				id: loginUser.id,
-				username: loginUser.username,
-				email: loginUser.password
-			}
-		);
+	if(contrasena != contrasena2){
+
+		res.status(404).json({
+			error: 'Las contraseñas deben ser iguales'
+		});
+
+	} else if(contrasena.length >= 5){
+
+	next();
+
+	} else{
+
+		res.status(404).json({
+			error: 'Las contraseñas deben ser Mayor a 5 Caracteres'
+		});
+
 	}
-	else
-		res.status('400').send('Error en usuario y/o contraseña');
+}
+
+
+
+server.get("/usuarios", (req, res) => {
+	res.status(200).json(usuarios);
 });
 
-/*
-GET /transferencias/idUsario
-Lista transferencias del id logueado
-response: [{id,from,to,amount,date}] donde from o to es idUsuario.
-*/
+server.post("/usuarios/login/", (req, res) => {
 
-server.get('/transferencias/:idUsuario', (req, res) => {
-	const id = req.params.idUsuario;	
-	const transUsuario = transferencias.filter(t => t.from == id || t.to == id);
+	const { usuario, contrasena } = req.body;
 
-	console.log(id,transUsuario);
+    const usuBus = usuarios.find(usr => usr.usuario == usuario );
 
-	res.status(200).send(transUsuario);
 
-});
+	if ( usuBus && usuario == usuBus.usuario && contrasena == usuBus.contrasena ) {
 
-/*
-	POST /transferencias
-	Crea una transferencia
-	body: {from,to,amount} //from= el usuario logueado
-*/
+		const userToken = jwt.sign({
+			id: usuBus.id,
+			nombre: usuBus.nombre,
+			apellido: usuBus.apellido
+		}, jwtClave, {
+			algorithm: "HS512",
+			expiresIn: 1200 // tiempo de expiracion en segundos
+		});
 
-server.post('/transferencias/', (req, res) => {
-	const { from, to, amount } = req.body
-	console.log({ from, to, amount });
-	console.log("Body Transferencias" ,req.body);
-	if (from || to || amount) {
-		res.status(404).send("Debe enviar FROM, TO, amount");
-	}else if (getSaldo(from)-amount<0){
-		res.status(404).send("Saldo insuficiente");
-	}
-	else{
-		const id = ++state.lastTransId;
-		transferencias.push(
-			{id: id, from: from, to: to, amount: amount,date: moment().format('DD/MM/YYYY')}
-		);
-		res.status(200).send("Transferencia enviada");
+		// 
+		res.status(200).json({
+			 nombre: usuBus.nombre ,
+			 apellido: usuBus.apellido ,
+			 admin : usuBus.admin,
+			 token:  userToken });
+	} else {
+		res.status(401).json({ error: "usuario o contrasena incorrecta" });
 	}
 });
 
 
+server.post("/usuarios/", validarEmail, validarEdad, validarContrasena, (req, res) => {
 
-/* INICIAR SERVER */
-initState();
+	const { nombre, apellido, edad, email, password, password2 } = req.body;
 
-server.listen(3000, () => {
-	//console.log(state);
-	console.log('Servidor iniciado...');
+	const nuevoUsuario = {
+		nombre,
+		apellido,
+		edad,
+		email,
+		password
+	}
+
+	usuarios.push(nuevoUsuario);
+
+	res.status(200).json({
+		mensaje: `Bienvenid@ al sitio ${nombre}`
+	});
+});
+
+
+server.listen(puerto, () => {
+
+	console.clear();
+	console.log(`Servidor iniciado en el Puerto ${puerto}`);
 
 });

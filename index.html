@@ -57,15 +57,17 @@
             <p class="lead">Bienvenid@ al HomeBanking</p>
             <hr class="my-4">
 
-            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#registro">Registro</button>
+            <button type="button" class="btn btn-info btnRegistro" data-toggle="modal" data-target="#registro">Registro</button>
             
-            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#login">Login</button>
+            <button type="button" class="btn btn-success btnIngreso" data-toggle="modal" data-target="#login">Login</button>
 
-            <button type="button" class="btn btn-primary" data-toggle="modal"
+            <button type="button" class="btn btn-primary btnTransferir" data-toggle="modal"
                 data-target="#transferir">Transferir</button>
 
-            <button type="button" class="btn btn-secondary" data-toggle="modal"
+            <button type="button" class="btn btn-secondary btnTransferencias" data-toggle="modal"
                 data-target="#transferencias">Transferencias</button>
+
+            <button type="button" class="btn btn-danger btnSalir">Salir</button>
 
         </div>
 
@@ -78,7 +80,9 @@
 
     <!-- Modales -->
 
-    <div class="modal fade" id="login" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        <!-- Modales -->
+
+        <div class="modal fade" id="login" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
             <div class="modal-content">
@@ -96,21 +100,16 @@
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">Usuario</div>
                                 </div>
-                                <input type="text" class="form-control usuario" value="leandro" id="usuario" placeholder="Usuario">
-                            </div>
-
-                            <div class="input-group mb-2 mr-sm-2">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">Email</div>
-                                </div>
-                                <input type="email" class="form-control email" value="mono@email.com" id="email" placeholder="Email">
+                                <input type="text" class="form-control usuario" id="usuario" value="Leandrito"
+                                    placeholder="Usuario" required>
                             </div>
 
                             <div class="input-group mb-2 mr-sm-2">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">Password</div>
                                 </div>
-                                <input type="password" class="form-control password" value="lean123" id="password" placeholder="Password">
+                                <input type="password" class="form-control password" id="password" value="123"
+                                    placeholder="Password" required>
                             </div>
 
                             <button type="submit" id="btnLogin" class="btn btn-success btnLogin">Ingresar</button>
@@ -138,32 +137,79 @@
                         <form class="form-inline">
                             <div class="input-group mb-2 mr-sm-2 lg-2">
                                 <div class="input-group-prepend">
-                                    <div class="input-group-text">Usuario</div>
+                                    <div class="input-group-text">Nombre</div>
                                 </div>
-                                <input type="text" class="form-control" id="usuario" placeholder="Usuario">
+                                <input type="text" class="form-control nuevoNombre" value="Rosa" id="nombre" placeholder="nombre"
+                                    required>
+                            </div>
+
+                            <div class="input-group mb-2 mr-sm-2 lg-2">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">Apellido</div>
+                                </div>
+                                <input type="text" class="form-control nuevoApellido" value="Melamano" id="apellido"
+                                    placeholder="apellido" required>
+                            </div>
+
+                            <div class="input-group mb-2 mr-sm-2 lg-2">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">Edad</div>
+                                </div>
+                                <input type="number" class="form-control nuevaEdad" value="65" id="edad" placeholder="edad"
+                                    required>
                             </div>
 
                             <div class="input-group mb-2 mr-sm-2">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">Email</div>
                                 </div>
-                                <input type="email" class="form-control" id="email" placeholder="Email">
+                                <input type="email" class="form-control emailRegistro" value="rosa@melamano.com" id="emailRegistro"
+                                    placeholder="Email" required>
                             </div>
 
                             <div class="input-group mb-2 mr-sm-2">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">Password</div>
                                 </div>
-                                <input type="password" class="form-control" id="password" placeholder="Password">
+                                <input type="password" class="form-control nuevoPassword" value="123" id="password"
+                                    placeholder="Password" required>
                             </div>
 
-                            <button type="submit" class="btn btn-warning justify-content-center">Registrarse</button>
+                            <div class="input-group mb-2 mr-sm-2">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">Repetir Pas</div>
+                                </div>
+                                <input type="password" class="form-control nuevoPassword2" value="123" id="password2"
+                                    placeholder="Repetir Pasword" required>
+                            </div>
+
+                            <button type="submit"
+                                class="btn btn-success justify-content-center btnRegistrar">Registrarse</button>
                         </form>
                     </div>
 
             </div>
         </div>
     </div>
+
+
+    <div class="modal fade" id="bienvenida" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title" id="exampleModalLabel">Bienvenid@ <span id="usuarioBienvenida"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form>
+                <div class="modal-body">
+                </div>
+
+        </div>
+    </div>
+</div>
 
 
     <div class="modal fade" id="transferir" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
